@@ -21,6 +21,8 @@ tf.app.flags.DEFINE_integer("issync", 0, "是否采用分布式的同步模式�
 learning_rate = FLAGS.learning_rate
 steps_to_validate = FLAGS.steps_to_validate
 
+tf.c
+
 
 def main(_):
     ps_hosts = FLAGS.ps_hosts.split(",")

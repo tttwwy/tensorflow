@@ -49,13 +49,17 @@ def main(_):
 
             loss_value = loss(label, pred)
             train_op = tf.train.AdamOptimizer(0.0001).minimize(loss_value,global_step=global_step)
+            init_op = tf.initialize_all_variables()
             hooks = [tf.train.StopAtStepHook(last_step=1000000)]
+            is_chief = (FLAGS.task_index == 0)
             if issync == 1:
                 with tf.train.MonitoredTrainingSession(master=server.target,
-                                                       is_chief=(FLAGS.task_index == 0),
+                                                       is_chief=is_chief,
                                                         checkpoint_dir="./checkpoint/",
                                                         hooks=hooks,
                                                        config=config) as sess:
+                    if is_chief:
+                        sess.run(init_op)
                     while not sess.should_stop():
                         train_x = np.random.randn(1)
                         train_y = 2 * train_x + np.random.randn(1) * 0.33 + 10

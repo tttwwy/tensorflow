@@ -22,7 +22,6 @@ learning_rate = FLAGS.learning_rate
 steps_to_validate = FLAGS.steps_to_validate
 
 
-
 def main(_):
     ps_hosts = FLAGS.ps_hosts.split(",")
     worker_hosts = FLAGS.worker_hosts.split(",")
@@ -82,7 +81,7 @@ def main(_):
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        with sv.prepare_or_wait_for_session(server.target,config=config) as sess:
+        with sv.prepare_or_wait_for_session(server.target, config=config) as sess:
             # 如果是同步模式
             if FLAGS.task_index == 0 and issync == 1:
                 sv.start_queue_runners(sess, [chief_queue_runner])

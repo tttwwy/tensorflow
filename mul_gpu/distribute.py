@@ -58,7 +58,7 @@ def main(_):
                                                             worker_hosts),
                                                         use_locking=True)
                 train_op = rep_op.apply_gradients(grads_and_vars,
-                                                  lobal_step=global_step)
+                                                  global_step=global_step)
                 init_token_op = rep_op.get_init_tokens_op()
                 chief_queue_runner = rep_op.get_chief_queue_runner()
             else:

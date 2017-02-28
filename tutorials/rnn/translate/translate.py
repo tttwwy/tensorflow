@@ -311,7 +311,7 @@ def self_test():
                        bucket_id, False)
 
 
-def main(_):
+def main():
     if FLAGS.self_test:
         self_test()
     elif FLAGS.decode:

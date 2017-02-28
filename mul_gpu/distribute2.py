@@ -58,7 +58,7 @@ def main(_):
                                                         checkpoint_dir="./checkpoint/",
                                                         hooks=hooks,
                                                        config=config) as sess:
-                    if is_chief:
+                    if is_chief: 
                         sess.run(init_op)
                     while not sess.should_stop():
                         train_x = np.random.randn(1)

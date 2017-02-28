@@ -44,6 +44,8 @@ import tensorflow as tf
 
 import data_utils
 import seq2seq_model
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
@@ -171,8 +173,6 @@ def train():
         from_train, to_train, from_dev, to_dev, _, _ = data_utils.prepare_wmt_data(
             FLAGS.data_dir, FLAGS.from_vocab_size, FLAGS.to_vocab_size)
 
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
         # Create model.
         print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))

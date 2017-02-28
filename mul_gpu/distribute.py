@@ -54,7 +54,6 @@ def main(_):
                 rep_op = tf.train.SyncReplicasOptimizer(optimizer,
                                                         replicas_to_aggregate=len(
                                                             worker_hosts),
-                                                        replica_id=FLAGS.task_index,
                                                         total_num_replicas=len(
                                                             worker_hosts),
                                                         use_locking=True)

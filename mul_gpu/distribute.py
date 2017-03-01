@@ -1,5 +1,9 @@
 # coding=utf-8
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 import numpy as np
+import sys
 import tensorflow as tf
 
 # Define parameters
@@ -94,7 +98,7 @@ def main(_):
                                            feed_dict={input: train_x, label: train_y})
                 if step % steps_to_validate == 0:
                     w, b = sess.run([weight, biase])
-                    print("step: %d, weight: %f, biase: %f, loss: %f" % (step, w, b, loss_v))
+                    print("step: %d, weight: %f, biase: %f, loss: %f" % (step, w, b, loss_v),file=sys.stderr)
 
         sv.stop()
 

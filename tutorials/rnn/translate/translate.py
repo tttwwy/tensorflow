@@ -48,7 +48,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
-tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
+tf.app.flags.DEFINE_float("learning_rate_decay_factor", 1.0,
                           "Learning rate decays by this much.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0,
                           "Clip gradients to this norm.")
@@ -76,6 +76,7 @@ tf.app.flags.DEFINE_boolean("use_fp16", False,
                             "Train using fp16 instead of fp32.")
 
 FLAGS = tf.app.flags.FLAGS
+
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
@@ -151,6 +152,8 @@ def train():
     to_train = None
     from_dev = None
     to_dev = None
+    print(FLAGS.data_dir)
+    print(FLAGS.to_dev_data)
     if FLAGS.from_train_data and FLAGS.to_train_data:
         from_train_data = FLAGS.from_train_data
         to_train_data = FLAGS.to_train_data
@@ -244,6 +247,7 @@ def train():
 
 
 def decode():
+    import ipdb
     with tf.Session() as sess:
         # Create model and load parameters.
         model = create_model(sess, True)
@@ -276,6 +280,7 @@ def decode():
             # Get a 1-element batch to feed the sentence to the model.
             encoder_inputs, decoder_inputs, target_weights = model.get_batch(
                 {bucket_id: [(token_ids, [])]}, bucket_id)
+            ipdb.set_trace()
             # Get output logits for the sentence.
             _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
                                              target_weights, bucket_id, True)
@@ -311,7 +316,7 @@ def self_test():
                        bucket_id, False)
 
 
-def main():
+def main(_):
     if FLAGS.self_test:
         self_test()
     elif FLAGS.decode:

@@ -1,4 +1,8 @@
 # coding=utf-8
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+import sys
 import numpy as np
 import tensorflow as tf
 config = tf.ConfigProto()
@@ -48,30 +52,33 @@ def main(_):
             pred = tf.multiply(input, weight) + biase
 
             loss_value = loss(label, pred)
-            train_op = tf.train.AdamOptimizer(0.0001).minimize(loss_value,global_step=global_step)
-            init_op = tf.initialize_all_variables()
-            hooks = [tf.train.StopAtStepHook(last_step=1000000)]
             is_chief = (FLAGS.task_index == 0)
+            opt = tf.train.AdamOptimizer()
             if issync == 1:
-                with tf.train.MonitoredTrainingSession(master=server.target,
-                                                       is_chief=is_chief,
-                                                        checkpoint_dir="./checkpoint/",
-                                                        hooks=hooks,
-                                                       config=config) as sess:
-                    if is_chief: 
-                        sess.run(init_op)
-                    while not sess.should_stop():
-                        train_x = np.random.randn(1)
-                        train_y = 2 * train_x + np.random.randn(1) * 0.33 + 10
-                        _, loss_v, step = sess.run([train_op, loss_value, global_step],
-                                                   feed_dict={input: train_x, label: train_y})
-                        if step % steps_to_validate == 0:
-                            w, b = sess.run([weight, biase])
-                            print("step: %d, weight: %f, biase: %f, loss: %f" % (step, w, b, loss_v))
+                opt = tf.train.SyncReplicasOptimizer(opt, replicas_to_aggregate=len(worker_hosts),
+                                               total_num_replicas=len(worker_hosts))
+            train_op = opt.minimize(loss_value,global_step=global_step)
+            init_op = tf.global_variables_initializer()
+            hooks = [tf.train.StopAtStepHook(last_step=1000000)]
+            if issync == 1:
+                hooks.append(opt.make_session_run_hook(is_chief))
+            with tf.train.MonitoredTrainingSession(master=server.target,
+                                                   is_chief=is_chief,
+                                                    checkpoint_dir="./checkpoint/",
+                                                    hooks=hooks,
+                                                   config=config) as sess:
+                if is_chief and issync == 1:
+                    sess.run(init_op)
+                while not sess.should_stop():
+                    train_x = np.random.randn(1)
+                    train_y = 2 * train_x + np.random.randn(1) * 0.33 + 10
+                    _, loss_v, step = sess.run([train_op, loss_value, global_step],
+                                               feed_dict={input: train_x, label: train_y})
+                    if step % steps_to_validate == 0:
+                        w, b = sess.run([weight, biase])
+                        print("step: {0}, weight: {1}, biase: {2}, loss: {3} task id:{4}".format(step,w,b,loss_v,FLAGS.task_index),file=sys.stderr)
+                        # print("step: %d, weight: %f, biase: %f, loss: %f" % (step, w, b, loss_v),file=sys.stderr)
 
-                # 同步模式计算更新梯度
-            else:
-                pass
 
 
 
